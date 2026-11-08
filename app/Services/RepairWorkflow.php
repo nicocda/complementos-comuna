@@ -147,14 +147,14 @@ class RepairWorkflow
     /**
      * Step 4b: repair finished, with provider and final cost.
      *
-     * @param  array{provider: string, work_performed: string, final_cost: float|int|string, completed_on: string|\DateTimeInterface}  $data
+     * @param  array{provider?: string|null, work_performed?: string|null, final_cost?: float|int|string|null, completed_on: string|\DateTimeInterface}  $data
      */
     public function complete(User $actor, RepairRequest $request, array $data): RepairRequest
     {
         $this->authorize($actor, Permissions::REPAIRS_TRACK);
 
-        $this->requireText($data['provider'] ?? null, 'provider', 'Indicá el proveedor o mecánico responsable.');
-        $this->requireText($data['work_performed'] ?? null, 'work_performed', 'Describí la reparación realizada.');
+        $provider = $this->requireText($data['provider'] ?? null, 'provider', 'Indicá el proveedor o mecánico responsable.');
+        $workPerformed = $this->requireText($data['work_performed'] ?? null, 'work_performed', 'Describí la reparación realizada.');
         $finalCost = $this->nullableMoney($data['final_cost'] ?? null, 'final_cost')
             ?? throw ValidationException::withMessages(['final_cost' => 'Indicá el costo final.']);
         $completedOn = Carbon::parse($data['completed_on'])->startOfDay();
@@ -163,10 +163,10 @@ class RepairWorkflow
             throw ValidationException::withMessages(['completed_on' => 'La fecha de finalización no puede ser futura.']);
         }
 
-        return $this->transition($request, $actor, RepairStatus::Completed, null, function (RepairRequest $request) use ($data, $finalCost, $completedOn) {
+        return $this->transition($request, $actor, RepairStatus::Completed, null, function (RepairRequest $request) use ($provider, $workPerformed, $finalCost, $completedOn) {
             $request->forceFill([
-                'provider' => trim($data['provider']),
-                'work_performed' => trim($data['work_performed']),
+                'provider' => $provider,
+                'work_performed' => $workPerformed,
                 'final_cost' => $finalCost,
                 'completed_on' => $completedOn,
             ]);
@@ -366,11 +366,12 @@ class RepairWorkflow
         }
     }
 
-    private function requireText(?string $value, string $field, string $message): void
+    /**
+     * @return non-empty-string the trimmed value
+     */
+    private function requireText(?string $value, string $field, string $message): string
     {
-        if ($this->nullableText($value) === null) {
-            throw ValidationException::withMessages([$field => $message]);
-        }
+        return $this->nullableText($value) ?? throw ValidationException::withMessages([$field => $message]);
     }
 
     private function nullableText(?string $value): ?string

@@ -55,15 +55,19 @@ class RepairRequestResource extends Resource
 
     /**
      * Every query (list, view, route binding) only sees what the user is allowed to see.
+     *
+     * @return Builder<RepairRequest>
      */
     public static function getEloquentQuery(): Builder
     {
-        /** @var User|null $user */
+        $query = RepairRequest::query()->with(['driver', 'unit']);
         $user = auth()->user();
 
-        return parent::getEloquentQuery()
-            ->with(['driver', 'unit'])
-            ->when($user, fn (Builder $query, User $user) => $query->visibleTo($user), fn (Builder $query) => $query->whereRaw('1 = 0'));
+        if (! $user instanceof User) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->visibleTo($user);
     }
 
     /**

@@ -12,10 +12,38 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * Mass assignment is intentionally closed: every write goes through
  * App\Services\RepairWorkflow, which sets attributes explicitly.
+ *
+ * @property int $id
+ * @property int $number
+ * @property RepairStatus $status
+ * @property int $unit_id
+ * @property string $unit_label
+ * @property int $driver_id
+ * @property int $reported_by
+ * @property ProblemKind $problem_kind
+ * @property string $problem_description
+ * @property Carbon $detected_on
+ * @property string|null $signed_form_path
+ * @property string|null $inspection_notes
+ * @property RepairUrgency|null $urgency
+ * @property string|null $estimated_parts_or_service
+ * @property string|null $estimated_cost
+ * @property int|null $assessed_by
+ * @property Carbon|null $assessed_at
+ * @property int|null $decided_by
+ * @property Carbon|null $decided_at
+ * @property string|null $decision_notes
+ * @property string|null $provider
+ * @property string|null $work_performed
+ * @property string|null $final_cost
+ * @property Carbon|null $completed_on
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  */
 class RepairRequest extends Model
 {

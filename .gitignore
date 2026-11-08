@@ -25,3 +25,9 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Real spreadsheets contain personal data: load them through the app, never commit them
+*.xlsx
+*.xls
+/*.csv
+

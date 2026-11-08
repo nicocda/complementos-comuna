@@ -10,6 +10,7 @@ use Filament\Actions\CreateAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Support\Exceptions\Halt;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Validation\ValidationException;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -44,7 +45,7 @@ class ListUnits extends ListRecords
                     ->storeFiles(false)
                     ->required(),
             ])
-            ->action(function (array $data, Action $action) {
+            ->action(function (array $data) {
                 /** @var TemporaryUploadedFile $file */
                 $file = $data['file'];
 
@@ -58,7 +59,7 @@ class ListUnits extends ListRecords
                         ->persistent()
                         ->send();
 
-                    $action->halt();
+                    throw new Halt;
                 }
 
                 $body = "Unidades nuevas: {$result['units_created']} · actualizadas: {$result['units_updated']} · "

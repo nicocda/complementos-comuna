@@ -1,58 +1,73 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Gestión interna — módulos de trabajo
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplicación web interna con usuarios, roles y permisos por módulo. El primer módulo es el de **comunicación y autorización de reparaciones** de la flota.
 
-## About Laravel
+Stack: Laravel 13, Filament 5 (panel), spatie/laravel-permission, MySQL en producción y SQLite en desarrollo.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Módulos
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Flota
+- **Unidades**: número de interno (opcional para implementos S/N), tipo, descripción, patente, estado (activa / en maestranza / de baja) y unidad a la que está acoplado cada implemento.
+- **Conductores**: pueden estar vinculados a un usuario del sistema y tener varias unidades asignadas.
+- **Importar planilla**: CSV con columnas `NRO;TIPO;VEHICULO;NRO2;VEHICULO2;CONDUCTOR`. Ver [docs/plantilla-flota.csv](docs/plantilla-flota.csv). Si se vuelve a importar, actualiza sin duplicar.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Reparaciones
+Flujo según el procedimiento:
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+```
+Reportado → Pendiente de aprobación → Autorizado → En reparación → Finalizado
+     │               │   └──→ Rechazado
+     │               └──→ (devuelto) Reportado
+     └──→ Anulado
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+1. **Aviso** del conductor: unidad, problema, tipo (rotura o falla), fecha y número correlativo. Se puede imprimir para firmar y subir el escaneo firmado.
+2. **Informe técnico** del encargado: observaciones, urgencia, repuestos o servicio estimado y costo estimado. Al guardarlo se eleva a los superiores.
+3. **Decisión** de los superiores: autorizar, rechazar o pedir más información.
+4. **Seguimiento**: proveedor, reparación realizada, costo final y fecha.
 
-## Contributing
+Cada cambio queda en el historial (quién, cuándo, comentario) y notifica a quien tiene que actuar: campanita del panel y email. Cada solicitud tiene además un botón "Enviar por WhatsApp" que arma el mensaje con el link.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Roles
 
-## Code of Conduct
+| Rol | Puede |
+|---|---|
+| Administrador | Todo, incluida la gestión de usuarios |
+| Superior | Ver todo, autorizar, rechazar o devolver |
+| Encargado | Gestionar flota, cargar avisos, hacer informes, registrar seguimiento |
+| Conductor | Cargar avisos propios y ver solo los suyos (sin costos) |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Los permisos se definen en [app/Support/Permissions.php](app/Support/Permissions.php). Para agregar un módulo nuevo, sumá sus permisos con prefijo (`modulo.accion`) y corré `php artisan db:seed --class=RolesAndPermissionsSeeder`.
 
-## Security Vulnerabilities
+## Desarrollo local
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Requisitos: PHP 8.3 o superior con `intl`, `pdo_sqlite` y `fileinfo`, y Composer.
 
-## License
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed      # con APP_ENV=local crea usuarios demo (*@demo.test / "password")
+php artisan serve               # http://localhost:8000
+php artisan queue:work          # en otra terminal, para procesar las notificaciones
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Los emails en local van a `storage/logs/laravel.log` (`MAIL_MAILER=log`).
+
+## Calidad
+
+```bash
+php artisan test                # pruebas (PHPUnit)
+vendor/bin/pint --test          # estilo
+vendor/bin/phpstan analyse      # análisis estático (Larastan, nivel 6)
+```
+
+> Si `phpstan` queda colgado sin consumir CPU, algún firewall/antivirus (p. ej. Avast) está bloqueando la conexión local entre sus procesos. Opciones: agregar una excepción para `php.exe` o correrlo en un solo proceso con `vendor/bin/phpstan analyse --debug`.
+
+## Despliegue
+
+Ver [docs/despliegue-hostinger.md](docs/despliegue-hostinger.md).
+
+## Datos personales
+
+La base contiene nombres de empleados, asignaciones de vehículos y patentes. **No** se versionan planillas reales ni dumps de la base: la flota se carga desde la app con "Importar planilla".

@@ -11,7 +11,20 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int|null $internal_number
+ * @property UnitType $type
+ * @property string $name
+ * @property string|null $license_plate
+ * @property UnitStatus $status
+ * @property int|null $attached_to_unit_id
+ * @property string|null $notes
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 #[Fillable(['internal_number', 'type', 'name', 'license_plate', 'status', 'attached_to_unit_id', 'notes'])]
 class Unit extends Model
 {
