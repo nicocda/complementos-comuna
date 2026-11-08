@@ -47,7 +47,7 @@ class DriverForm
                 Select::make('units')
                     ->label('Unidades asignadas')
                     ->relationship('units', 'name')
-                    ->getOptionLabelFromRecordUsing(fn (Unit $unit) => $unit->label())
+                    ->getOptionLabelFromRecordUsing(fn (Unit $record) => $record->label())
                     ->multiple()
                     ->searchable(['name', 'internal_number'])
                     ->preload()

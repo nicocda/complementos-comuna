@@ -9,6 +9,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 use Illuminate\Validation\Rules\Password;
+use Spatie\Permission\Models\Role;
 
 class UserForm
 {
@@ -31,7 +32,7 @@ class UserForm
                     ->label('Contraseña')
                     ->password()
                     ->revealable()
-                    ->rule(Password::min(12)->letters()->numbers())
+                    ->rule(Password::default())
                     ->required(fn (string $operation) => $operation === 'create')
                     ->dehydrated(fn (?string $state) => filled($state))
                     ->helperText(fn (string $operation) => $operation === 'edit'
@@ -46,7 +47,7 @@ class UserForm
                 CheckboxList::make('roles')
                     ->label('Roles')
                     ->relationship('roles', 'name')
-                    ->getOptionLabelFromRecordUsing(fn ($role) => Permissions::roleLabels()[$role->name] ?? $role->name)
+                    ->getOptionLabelFromRecordUsing(fn (Role $record) => Permissions::roleLabels()[$record->name] ?? $record->name)
                     ->required()
                     ->columnSpanFull(),
             ]);

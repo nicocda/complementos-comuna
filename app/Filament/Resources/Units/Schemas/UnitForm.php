@@ -53,7 +53,7 @@ class UnitForm
                             ->when($record, fn (Builder $query) => $query->whereKeyNot($record->getKey()))
                             ->orderBy('internal_number'),
                     )
-                    ->getOptionLabelFromRecordUsing(fn (Unit $unit) => $unit->label())
+                    ->getOptionLabelFromRecordUsing(fn (Unit $record) => $record->label())
                     ->searchable(['name', 'internal_number'])
                     ->preload(),
                 Textarea::make('notes')

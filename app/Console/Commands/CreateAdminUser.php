@@ -30,7 +30,7 @@ class CreateAdminUser extends Command
         )->errors()->first('email') ?: null);
         $password = password('Contraseña (mínimo 12 caracteres)', required: true, validate: fn (string $value) => Validator::make(
             ['password' => $value],
-            ['password' => [Password::min(12)->letters()->numbers()]],
+            ['password' => [Password::default()]],
         )->errors()->first('password') ?: null);
 
         $this->callSilently('db:seed', ['--class' => RolesAndPermissionsSeeder::class, '--force' => true]);
