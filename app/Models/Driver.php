@@ -30,6 +30,7 @@ class Driver extends Model
     {
         return [
             'is_active' => 'boolean',
+            'user_id' => 'integer',
         ];
     }
 

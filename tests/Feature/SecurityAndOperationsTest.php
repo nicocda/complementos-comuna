@@ -82,7 +82,14 @@ class SecurityAndOperationsTest extends TestCase
         $this->actingAs($admin);
 
         Livewire::test(EditUser::class, ['record' => $admin->getKey()])
-            ->assertFormFieldDisabled('is_active');
+            ->assertFormFieldDisabled('is_active')
+            ->assertFormFieldDisabled('roles')
+            ->fillForm(['name' => 'Admin Renombrado'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertTrue($admin->fresh()->hasRole(Permissions::ROLE_ADMIN));
+        $this->assertTrue($admin->fresh()->is_active);
     }
 
     public function test_create_admin_command(): void

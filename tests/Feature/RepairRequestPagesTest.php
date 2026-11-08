@@ -217,5 +217,9 @@ class RepairRequestPagesTest extends TestCase
         $this->assertStringContainsString($request->formattedNumber(), $database['title']);
         $this->assertSame($notification->title(), $mail->subject);
         $this->assertStringContainsString('/admin/reparaciones/'.$request->getKey(), $mail->actionUrl);
+
+        $html = (string) $mail->render();
+        $this->assertStringContainsString('copiá y pegá esta dirección', $html);
+        $this->assertStringNotContainsString("If you're having trouble", $html);
     }
 }

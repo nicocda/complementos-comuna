@@ -48,6 +48,8 @@ class UserForm
                     ->label('Roles')
                     ->relationship('roles', 'name')
                     ->getOptionLabelFromRecordUsing(fn (Role $record) => Permissions::roleLabels()[$record->name] ?? $record->name)
+                    // Prevents an admin from removing their own admin role.
+                    ->disabled(fn (?User $record) => $record !== null && $record->is(auth()->user()))
                     ->required()
                     ->columnSpanFull(),
             ]);

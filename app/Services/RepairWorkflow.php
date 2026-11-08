@@ -184,7 +184,7 @@ class RepairWorkflow
             RepairStatus::Cancelled,
             $reason,
             null,
-            fn (RepairRequest $request) => $this->reporterOnly($request),
+            fn (RepairRequest $request) => $this->reporterAndDriver($request),
         );
     }
 
@@ -332,7 +332,7 @@ class RepairWorkflow
     }
 
     /**
-     * Supervisors, trackers and the person who reported it.
+     * Supervisors, trackers, the person who reported it and the driver (if they have an account).
      *
      * @return Collection<int, User>
      */
@@ -340,15 +340,19 @@ class RepairWorkflow
     {
         return $this->usersWith(Permissions::REPAIRS_ASSESS)
             ->merge($this->usersWith(Permissions::REPAIRS_TRACK))
-            ->merge($this->reporterOnly($request));
+            ->merge($this->reporterAndDriver($request));
     }
 
     /**
+     * The person who loaded the notice and the driver's own account, when different.
+     *
      * @return Collection<int, User>
      */
-    private function reporterOnly(RepairRequest $request): Collection
+    private function reporterAndDriver(RepairRequest $request): Collection
     {
-        return User::query()->whereKey($request->reported_by)->get();
+        $driverUserId = Driver::query()->whereKey($request->driver_id)->value('user_id');
+
+        return User::query()->whereKey(array_filter([$request->reported_by, $driverUserId]))->get();
     }
 
     /**

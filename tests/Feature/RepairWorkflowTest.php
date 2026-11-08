@@ -174,6 +174,21 @@ class RepairWorkflowTest extends TestCase
         );
     }
 
+    public function test_driver_with_account_is_notified_when_supervisor_reported_for_them(): void
+    {
+        [$driverUser, $driver] = $this->driverUser();
+        $request = $this->workflow->report($this->supervisor, $this->noticeData(Unit::factory()->create(), $driver));
+        $request = $this->workflow->submitAssessment($this->supervisor, $request, ['urgency' => 'baja']);
+
+        $this->workflow->approve($this->superior, $request);
+
+        Notification::assertSentTo(
+            $driverUser,
+            RepairRequestStatusChanged::class,
+            fn (RepairRequestStatusChanged $n) => $n->status === RepairStatus::Approved,
+        );
+    }
+
     public function test_driver_cannot_assess(): void
     {
         [$user] = $this->driverUser();

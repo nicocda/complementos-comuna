@@ -56,6 +56,9 @@ class RepairRequest extends Model
     {
         return [
             'number' => 'integer',
+            'unit_id' => 'integer',
+            'driver_id' => 'integer',
+            'reported_by' => 'integer',
             'status' => RepairStatus::class,
             'problem_kind' => ProblemKind::class,
             'urgency' => RepairUrgency::class,
