@@ -23,7 +23,7 @@ Guía para publicar la app en un subdominio, por ejemplo `gestion.cañadarosquin
 
 El código va **fuera** de `public_html`, y solo la carpeta `public/` queda expuesta a la web:
 
-```
+```text
 /home/<usuario>/apps/gestion          ← proyecto completo (.env, vendor, storage, ...)
 /home/<usuario>/apps/gestion/public   ← lo único que debe servir el subdominio
 ```
@@ -105,7 +105,7 @@ Las notificaciones (campanita del panel y emails) salen por cola. En el hosting 
 
 *Avanzado → Tareas Cron → Personalizado*, cada minuto (`* * * * *`):
 
-```
+```text
 /usr/bin/php /home/<usuario>/apps/gestion/artisan schedule:run >> /dev/null 2>&1
 ```
 

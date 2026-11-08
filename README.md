@@ -7,14 +7,16 @@ Stack: Laravel 13, Filament 5 (panel), spatie/laravel-permission, MySQL en produ
 ## Módulos
 
 ### Flota
+
 - **Unidades**: número de interno (opcional para implementos S/N), tipo, descripción, patente, estado (activa / en maestranza / de baja) y unidad a la que está acoplado cada implemento.
 - **Conductores**: pueden estar vinculados a un usuario del sistema y tener varias unidades asignadas.
 - **Importar planilla**: CSV con columnas `NRO;TIPO;VEHICULO;NRO2;VEHICULO2;CONDUCTOR`. Ver [docs/plantilla-flota.csv](docs/plantilla-flota.csv). Si se vuelve a importar, actualiza sin duplicar.
 
 ### Reparaciones
+
 Flujo según el procedimiento:
 
-```
+```text
 Reportado → Pendiente de aprobación → Autorizado → En reparación → Finalizado
      │               │   └──→ Rechazado
      │               └──→ (devuelto) Reportado
@@ -31,7 +33,7 @@ Cada cambio queda en el historial (quién, cuándo, comentario) y notifica a qui
 ## Roles
 
 | Rol | Puede |
-|---|---|
+| --- | --- |
 | Administrador | Todo, incluida la gestión de usuarios |
 | Superior | Ver todo, autorizar, rechazar o devolver |
 | Encargado | Gestionar flota, cargar avisos, hacer informes, registrar seguimiento |
